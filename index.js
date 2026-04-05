@@ -75,8 +75,13 @@ class CanvasHandler {
           "lowestFlowInput": startY, 
           "colour": node.colour ?? this.randomColour(),
           "type": node.type ?? "spacer",
+          "spacerFlowCounter": 0,
         };
-        this.flowMap[layerIndex][node.index] = node.flow ?? {};
+        
+        this.flowMap[layerIndex][node.index] = {
+          "streams": node.flow ?? {},
+          "colours": {}
+        }
 
         previousEndY += (node.size * this.dataTocanvasHeightPercentage);
       }
@@ -138,14 +143,13 @@ class CanvasHandler {
       for(let nodeIndex = 0; nodeIndex < layer.length; nodeIndex++) {
         node = layer[nodeIndex];
 
-        let sourceStartX,sourceStartY,sourceEndX,sourceEndY, sourceNode;
+        let sourceStartX,sourceStartY,sourceEndX,sourceEndY,sourceNode;
         [[sourceStartX, sourceStartY],[sourceEndX, sourceEndY]] = this.nodeMap[layerIndex][nodeIndex].position;
         sourceNode = this.nodeMap[layerIndex][nodeIndex];
-        this.context.fillStyle = sourceNode.colour + '33';
 
         let totalFlowHeight = sourceStartY;
         let nodeTocanvasHeightPercentage = (sourceEndY - sourceStartY) / this.nodeMap[layerIndex][nodeIndex].size;
-        for (let flow in node) {
+        for (let flow in node["streams"]) {
 
           // Set target node
           let targetStartX, targetStartY, targetEndX, targetEndY, targetNode;
@@ -153,18 +157,27 @@ class CanvasHandler {
 
           [[targetStartX, targetStartY],[targetEndX, targetEndY]] = targetNode.position;
 
-          let flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity
+          let flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity, flowColour;
           flowStartX = sourceEndX;
           flowStartY = totalFlowHeight;
           flowEndX = targetStartX;
           flowEndY = targetNode.lowestFlowInput;
           flowCurveSeverity = 20;
-          flowSourceHeight = (node[flow] * nodeTocanvasHeightPercentage) + totalFlowHeight;
-          flowTargetHeight = targetNode.lowestFlowInput + (((targetEndY - targetStartY) / targetNode.size) * node[flow]);
+          flowSourceHeight = (node["streams"][flow] * nodeTocanvasHeightPercentage) + totalFlowHeight;
+          flowTargetHeight = targetNode.lowestFlowInput + (((targetEndY - targetStartY) / targetNode.size) * node["streams"][flow]);
+          flowColour = node["colours"][flow] ?? sourceNode.colour + '33';
 
-          this.drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity);
+          if (targetNode.type == "spacer") {
+            let targetFlow = this.flowMap[layerIndex + 1][flow];
+            let targetNodeStreamKeys = Object.keys(targetFlow["streams"]);
+            let nextKey = targetNodeStreamKeys[targetNode.spacerFlowCounter];
+            targetFlow["colours"][nextKey] = sourceNode.colour + '33';
+            targetNode.spacerFlowCounter++;
+          }
 
-          totalFlowHeight += (node[flow] * nodeTocanvasHeightPercentage);
+          this.drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity, flowColour, targetNode.type == "spacer");
+
+          totalFlowHeight += (node["streams"][flow] * nodeTocanvasHeightPercentage);
           targetNode.lowestFlowInput = flowTargetHeight;
           this.nodeMap[layerIndex + 1][flow] = targetNode;
         }
@@ -172,7 +185,8 @@ class CanvasHandler {
     }
   }
 
-  drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity) {
+  drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity, flowColour, flowTargetIsSpacer = false) {
+    this.context.fillStyle = flowColour;
     this.context.beginPath();
     this.context.moveTo(flowStartX, flowStartY);
     this.context.bezierCurveTo(
@@ -182,6 +196,12 @@ class CanvasHandler {
       flowEndY, 
       flowEndX, 
       flowEndY);
+    
+    if(flowTargetIsSpacer) {
+      this.context.lineTo(this.nodeWidth + (flowEndX * this.width), flowEndY);
+      this.context.lineTo(this.nodeWidth + (flowEndX), flowTargetHeight);
+    }
+    
     this.context.lineTo(flowEndX, flowTargetHeight);
     this.context.bezierCurveTo(
       flowEndX - (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
@@ -190,6 +210,7 @@ class CanvasHandler {
       flowSourceHeight, 
       flowStartX, 
       flowSourceHeight);
+
     this.context.closePath();
     this.context.fill();
   }
@@ -209,7 +230,7 @@ class CanvasHandler {
             "size": 700,
             "flow": {
               0: 100,
-              2: 50,
+              2: 30,
               3: 100,
               4: 100,
               6: 300,
@@ -222,7 +243,7 @@ class CanvasHandler {
             "size": 300,
             "flow": {
               1: 100,
-              2: 50,
+              2: 70,
               5: 100,
               6: 50
             }
@@ -255,7 +276,8 @@ class CanvasHandler {
             "size": 100,
             "colour": "#00ff00",
             "flow": {
-              0: 100
+              0: 30,
+              1: 70
             }
           },
           {
@@ -264,7 +286,8 @@ class CanvasHandler {
             "size": 100,
             "colour": "#0000ff",
             "flow": {
-              0: 100
+              0: 50,
+              1: 50
             }
           },
           {
