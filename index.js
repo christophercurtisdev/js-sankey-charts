@@ -175,7 +175,8 @@ class CanvasHandler {
             targetNode.spacerFlowCounter++;
           }
 
-          this.drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity, flowColour, targetNode.type == "spacer");
+          let extension = targetNode.type == "spacer" ? targetEndX : 0;
+          this.drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity, flowColour, extension);
 
           totalFlowHeight += (node["streams"][flow] * nodeTocanvasHeightPercentage);
           targetNode.lowestFlowInput = flowTargetHeight;
@@ -185,7 +186,7 @@ class CanvasHandler {
     }
   }
 
-  drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity, flowColour, flowTargetIsSpacer = false) {
+  drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity, flowColour, extension = 0) {
     this.context.fillStyle = flowColour;
     this.context.beginPath();
     this.context.moveTo(flowStartX, flowStartY);
@@ -197,9 +198,9 @@ class CanvasHandler {
       flowEndX, 
       flowEndY);
     
-    if(flowTargetIsSpacer) {
-      this.context.lineTo(this.nodeWidth + (flowEndX * this.width), flowEndY);
-      this.context.lineTo(this.nodeWidth + (flowEndX), flowTargetHeight);
+    if(extension > 0) {
+      this.context.lineTo(extension, flowEndY);
+      this.context.lineTo(extension, flowTargetHeight);
     }
     
     this.context.lineTo(flowEndX, flowTargetHeight);
