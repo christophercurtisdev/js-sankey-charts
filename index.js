@@ -228,25 +228,11 @@ class CanvasHandler {
           {
             "type": "node",
             "label": "Node 1",
-            "size": 700,
+            "size": 1000,
             "flow": {
-              0: 100,
-              2: 30,
-              3: 100,
-              4: 100,
-              6: 300,
-              7: 50
-            }
-          },
-          {
-            "type": "node",
-            "label": "Node 2",
-            "size": 300,
-            "flow": {
-              1: 100,
-              2: 70,
-              5: 100,
-              6: 50
+              0: 250,
+              1: 250,
+              2: 500
             }
           },
         ],
@@ -254,38 +240,45 @@ class CanvasHandler {
           {
             "type": "node",
             "label": "Node 1",
-            "size": 100,
-            "colour": "#00ff00",
+            "size": 250,
             "flow": {
-              0: 30,
-              1: 70
+              0: 250
             }
           },
           {
             "type": "node",
             "label": "Node 1",
-            "size": 100,
-            "colour": "#00ff00",
+            "size": 250,
             "flow": {
-              0: 70,
-              1: 30
+              0: 200,
+              1: 50
+            }
+          },
+          {
+            "type": "node",
+            "label": "Node 1",
+            "size": 500,
+            "flow": {
+              0: 50,
+              1: 50,
+              2: 400
+            }
+          },
+        ],
+        [
+          {
+            "type": "node",
+            "label": "Node 1",
+            "size": 500,
+            "flow": {
+              0: 400,
+              1: 100
             }
           },
           {
             "type": "spacer",
             "label": "Node 1",
             "size": 100,
-            "colour": "#00ff00",
-            "flow": {
-              0: 30,
-              1: 70
-            }
-          },
-          {
-            "type": "node",
-            "label": "Node 1",
-            "size": 100,
-            "colour": "#0000ff",
             "flow": {
               0: 50,
               1: 50
@@ -294,57 +287,10 @@ class CanvasHandler {
           {
             "type": "node",
             "label": "Node 1",
-            "size": 100,
-            "colour": "#0000ff",
-            "flow": {
-              0: 50,
-              1: 50
-            }
-          },
-          {
-            "type": "node",
-            "label": "Node 2",
-            "size": 100,
-            "colour": "#0000ff",
-            "flow": {
-              0: 50,
-              1: 50
-            }
-          },
-          {
-            "type": "node",
-            "label": "Node 3",
-            "size": 350,
+            "size": 400,
             "flow": {
               0: 100,
-              1: 250,
-            }
-          },
-          {
-            "type": "node",
-            "label": "Node 4",
-            "size": 50,
-            "flow": {
-              1: 50
-            }
-          }
-        ],
-        [
-          {
-            "type": "node",
-            "label": "Node 1",
-            "size": 500,
-            "flow": {
-              0: 500,
-            }
-          },
-          {
-            "type": "node",
-            "label": "Node 1",
-            "size": 500,
-            "flow": {
-              2: 50,
-              1: 450,
+              1: 300
             }
           },
         ],
@@ -352,19 +298,14 @@ class CanvasHandler {
           {
             "type": "node",
             "label": "Node 1",
-            "size": 500
+            "size": 500,
           },
           {
             "type": "node",
-            "label": "Node 3",
-            "size": 450
+            "label": "Node 1",
+            "size": 500,
           },
-          {
-            "type": "node",
-            "label": "Node 4",
-            "size": 50
-          }
-        ],
+        ]
       ]
     };
 
