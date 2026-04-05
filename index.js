@@ -61,9 +61,7 @@ class CanvasHandler {
         let node = layer[nodeIndex];
         node.index = nodeIndex;
 
-        let compensationAmount = (layerIndex - (layers.length / 2));
-        let compensationFactor = this.nodeWidth / layers.length;
-        let compensation = compensationAmount * compensationFactor * canvasWidthPercentage;
+        
 
         let startX = layerX - (((this.nodeWidth) * canvasWidthPercentage) / 2);
         let startY = previousEndY + ((this.nodeGap / 2) * canvasHeightPercentage);
