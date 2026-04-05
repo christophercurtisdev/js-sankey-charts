@@ -173,6 +173,7 @@ class CanvasHandler {
             let nextKey = targetNodeStreamKeys[targetNode.spacerFlowCounter];
             targetFlow["colours"][nextKey] = sourceNode.colour + '33';
             targetNode.spacerFlowCounter++;
+            this.nodeMap[layerIndex + 1][flow]["colour"] = sourceNode.colour; 
           }
 
           let extension = targetNode.type == "spacer" ? targetEndX : 0;
@@ -255,7 +256,7 @@ class CanvasHandler {
             }
           },
           {
-            "type": "node",
+            "type": "spacer",
             "label": "Node 1",
             "size": 500,
             "flow": {
@@ -270,9 +271,10 @@ class CanvasHandler {
             "type": "node",
             "label": "Node 1",
             "size": 500,
+            "colour": "#0000FF",
             "flow": {
-              0: 400,
-              1: 100
+              0: 450,
+              1: 50
             }
           },
           {
@@ -289,8 +291,7 @@ class CanvasHandler {
             "label": "Node 1",
             "size": 400,
             "flow": {
-              0: 100,
-              1: 300
+              1: 400
             }
           },
         ],
