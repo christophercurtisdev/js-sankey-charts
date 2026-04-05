@@ -73,7 +73,8 @@ class CanvasHandler {
           "size": node.size, 
           "label": node.label,
           "lowestFlowInput": startY, 
-          "colour": node.colour ?? this.randomColour()
+          "colour": node.colour ?? this.randomColour(),
+          "type": node.type ?? "spacer",
         };
         this.flowMap[layerIndex][node.index] = node.flow ?? {};
 
@@ -106,31 +107,29 @@ class CanvasHandler {
     let startX, startY, endX, endY;
     [[startX, startY],[endX, endY]] = node.position;
 
-    this.context.shadowOffsetX = 2;
-    this.context.shadowOffsetY = 2;
-    this.context.shadowColor = 'rgba(100, 100, 100, 0.5)';
-    this.context.shadowBlur = 20;
-    this.context.beginPath();
-    this.context.moveTo(startX, startY);
-    this.context.lineTo(endX, startY);
-    this.context.lineTo(endX, endY);
-    this.context.lineTo(startX, endY);
-    this.context.closePath();
-    this.context.fill();
+    if (node.type == "node") {
+      this.context.shadowOffsetX = 2;
+      this.context.shadowOffsetY = 2;
+      this.context.shadowColor = 'rgba(100, 100, 100, 0.5)';
+      this.context.shadowBlur = 20;
+      this.context.beginPath();
+      this.context.moveTo(startX, startY);
+      this.context.lineTo(endX, startY);
+      this.context.lineTo(endX, endY);
+      this.context.lineTo(startX, endY);
+      this.context.closePath();
+      this.context.fill();
 
-    if (this.showLabels) {
-      this.context.textBaseline = "middle";
-      this.context.fillStyle = "black";
-      this.context.textAlign = "center";
-      this.context.fillText(node.label, ((endX - startX) / 2) + startX, ((endY - startY) / 2) + startY);
+      if (this.showLabels) {
+        this.context.textBaseline = "middle";
+        this.context.fillStyle = "black";
+        this.context.textAlign = "center";
+        this.context.fillText(node.label, ((endX - startX) / 2) + startX, ((endY - startY) / 2) + startY);
+      }
     }
   }
 
   drawFlows() {
-    // Customisations
-    // this.context.fillStyle = this.colour;
-    // this.context.fillStyle = '#44ff0050';
-
     // Nested loop Variables
     let layer, node;
 
@@ -147,53 +146,52 @@ class CanvasHandler {
         let totalFlowHeight = sourceStartY;
         let nodeTocanvasHeightPercentage = (sourceEndY - sourceStartY) / this.nodeMap[layerIndex][nodeIndex].size;
         for (let flow in node) {
+
           // Set target node
           let targetStartX, targetStartY, targetEndX, targetEndY, targetNode;
           targetNode = this.nodeMap[layerIndex + 1][flow];
 
           [[targetStartX, targetStartY],[targetEndX, targetEndY]] = targetNode.position;
 
-          let flowStartX, flowStartY, flowEndX, flowEndY, flowCurveSeverity;
+          let flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity
           flowStartX = sourceEndX;
           flowStartY = totalFlowHeight;
           flowEndX = targetStartX;
           flowEndY = targetNode.lowestFlowInput;
           flowCurveSeverity = 20;
+          flowSourceHeight = (node[flow] * nodeTocanvasHeightPercentage) + totalFlowHeight;
+          flowTargetHeight = targetNode.lowestFlowInput + (((targetEndY - targetStartY) / targetNode.size) * node[flow]);
 
-          this.context.beginPath();
-          this.context.moveTo(flowStartX, flowStartY);
-          this.context.bezierCurveTo(
-            flowStartX + (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
-            flowStartY, 
-            flowEndX - (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
-            flowEndY, 
-            flowEndX, 
-            flowEndY);
+          this.drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity);
 
-          // Calculate flow height on target node
-          let targetFlowHeight = ((targetEndY - targetStartY) / targetNode.size) * node[flow];
-          let targetLowestFlowInput = targetNode.lowestFlowInput + targetFlowHeight;
-          this.context.lineTo(flowEndX, targetLowestFlowInput);
-
-          // Increment source lowest flow point
           totalFlowHeight += (node[flow] * nodeTocanvasHeightPercentage);
-
-          this.context.bezierCurveTo(
-            flowEndX - (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
-            targetLowestFlowInput, 
-            flowStartX + (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
-            totalFlowHeight, 
-            flowStartX, 
-            totalFlowHeight);
-          this.context.closePath();
-          this.context.fill();
-
-          // Increment target node's lowest flow point
-          targetNode.lowestFlowInput = targetLowestFlowInput;
+          targetNode.lowestFlowInput = flowTargetHeight;
           this.nodeMap[layerIndex + 1][flow] = targetNode;
         }
       }
     }
+  }
+
+  drawFlow(flowStartX, flowStartY, flowEndX, flowEndY, flowSourceHeight, flowTargetHeight, flowCurveSeverity) {
+    this.context.beginPath();
+    this.context.moveTo(flowStartX, flowStartY);
+    this.context.bezierCurveTo(
+      flowStartX + (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
+      flowStartY, 
+      flowEndX - (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
+      flowEndY, 
+      flowEndX, 
+      flowEndY);
+    this.context.lineTo(flowEndX, flowTargetHeight);
+    this.context.bezierCurveTo(
+      flowEndX - (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
+      flowTargetHeight, 
+      flowStartX + (((flowEndX - flowStartX) / 50) * flowCurveSeverity), 
+      flowSourceHeight, 
+      flowStartX, 
+      flowSourceHeight);
+    this.context.closePath();
+    this.context.fill();
   }
 
   randomColour() {
@@ -206,29 +204,33 @@ class CanvasHandler {
       "nodeLayers": [
         [
           {
+            "type": "node",
             "label": "Node 1",
             "size": 700,
             "flow": {
               0: 100,
-              2: 100,
+              2: 50,
               3: 100,
               4: 100,
               6: 300,
+              7: 50
             }
           },
           {
+            "type": "node",
             "label": "Node 2",
             "size": 300,
             "flow": {
               1: 100,
+              2: 50,
               5: 100,
-              6: 50,
-              7: 50
+              6: 50
             }
           },
         ],
         [
           {
+            "type": "node",
             "label": "Node 1",
             "size": 100,
             "colour": "#00ff00",
@@ -238,6 +240,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "node",
             "label": "Node 1",
             "size": 100,
             "colour": "#00ff00",
@@ -247,6 +250,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "spacer",
             "label": "Node 1",
             "size": 100,
             "colour": "#00ff00",
@@ -255,6 +259,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "node",
             "label": "Node 1",
             "size": 100,
             "colour": "#0000ff",
@@ -263,6 +268,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "node",
             "label": "Node 1",
             "size": 100,
             "colour": "#0000ff",
@@ -272,6 +278,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "node",
             "label": "Node 2",
             "size": 100,
             "colour": "#0000ff",
@@ -281,6 +288,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "node",
             "label": "Node 3",
             "size": 350,
             "flow": {
@@ -289,6 +297,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "node",
             "label": "Node 4",
             "size": 50,
             "flow": {
@@ -298,6 +307,7 @@ class CanvasHandler {
         ],
         [
           {
+            "type": "node",
             "label": "Node 1",
             "size": 500,
             "flow": {
@@ -305,6 +315,7 @@ class CanvasHandler {
             }
           },
           {
+            "type": "node",
             "label": "Node 1",
             "size": 500,
             "flow": {
@@ -315,14 +326,17 @@ class CanvasHandler {
         ],
         [
           {
+            "type": "node",
             "label": "Node 1",
             "size": 500
           },
           {
+            "type": "node",
             "label": "Node 3",
             "size": 450
           },
           {
+            "type": "node",
             "label": "Node 4",
             "size": 50
           }
