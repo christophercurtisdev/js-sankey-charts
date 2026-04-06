@@ -76,6 +76,7 @@ class CanvasHandler {
           "colour": node.colour ?? this.randomColour(),
           "type": node.type ?? "spacer",
           "spacerFlowCounter": 0,
+          "showLabel": node.label && this.showLabels
         };
         
         this.flowMap[layerIndex][node.index] = {
@@ -124,13 +125,13 @@ class CanvasHandler {
       this.context.lineTo(startX, endY);
       this.context.closePath();
       this.context.fill();
+    }
 
-      if (this.showLabels) {
-        this.context.textBaseline = "middle";
-        this.context.fillStyle = "black";
-        this.context.textAlign = "center";
-        this.context.fillText(node.label, ((endX - startX) / 2) + startX, ((endY - startY) / 2) + startY);
-      }
+    if (node.showLabel) {
+      this.context.textBaseline = "middle";
+      this.context.fillStyle = "black";
+      this.context.textAlign = "center";
+      this.context.fillText(node.label, ((endX - startX) / 2) + startX, ((endY - startY) / 2) + startY);
     }
   }
 
@@ -257,7 +258,6 @@ class CanvasHandler {
           },
           {
             "type": "spacer",
-            "label": "Node 1",
             "size": 500,
             "flow": {
               0: 50,
@@ -279,7 +279,7 @@ class CanvasHandler {
           },
           {
             "type": "spacer",
-            "label": "Node 1",
+            "label": "Flow Information",
             "size": 100,
             "flow": {
               0: 50,
