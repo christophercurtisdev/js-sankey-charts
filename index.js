@@ -33,7 +33,8 @@ class CanvasHandler {
     this.nodeGap = config.nodeGap ?? 1;
     this.nodeWidth = config.nodeWidth ?? 2;
     this.showLabels = config.showLabels ?? false;
-  }
+    this.chartPadding = config.chartPadding ?? 10;
+    }
 
   drawChart() {
     this.initialiseMaps();
@@ -57,16 +58,17 @@ class CanvasHandler {
       this.nodeMap[layerIndex] = [];
       this.flowMap[layerIndex] = [];
 
+      let xCompensation = ((this.nodeWidth * (layerIndex / (layers.length - 1))) - (this.nodeWidth / 2)) * canvasWidthPercentage;
+      let paddingCompensation = ((this.chartPadding * (layerIndex / (layers.length - 1))) - (this.chartPadding / 2));
+
       for(let nodeIndex = 0; nodeIndex < layer.length; nodeIndex++) {
         let node = layer[nodeIndex];
         node.index = nodeIndex;
 
-        
-
-        let startX = layerX - (((this.nodeWidth) * canvasWidthPercentage) / 2);
+        let startX = layerX - (((this.nodeWidth) * canvasWidthPercentage) / 2) - xCompensation - paddingCompensation;
         let startY = previousEndY + ((this.nodeGap / 2) * canvasHeightPercentage);
         let endX = startX + this.nodeWidth * canvasWidthPercentage;
-        let endY = startY + (node.size * this.dataTocanvasHeightPercentage) - (this.nodeGap * canvasHeightPercentage)
+        let endY = startY + (node.size * this.dataTocanvasHeightPercentage) - (this.nodeGap * canvasHeightPercentage);
         
         this.nodeMap[layerIndex][node.index] = {
           "position": [[startX, startY],[endX, endY]], 
