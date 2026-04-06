@@ -66,8 +66,20 @@ sankeyChart.drawChart();
     "nodeGap": {as a percentage of canvas height},
     "nodeWidth": {as a percentage of canvas width},
     "showLabels": {boolean},
+    "chartPadding": {number in pixels}
 }
 ```
+
+### Planned Features
+
+* Hover effects.
+* Chart key (plus customisation).
+* HTML Injection for chart overlays.
+* Animations
+    * Ideally for live chart updates (hit an API every minute and rerender the data).
+* Export button
+* Zoom and drag functionality
+
 
 ### Further Development
 
@@ -76,8 +88,6 @@ Ideally, this would be the first of a suite of packages for simple and direct ch
 Ultimately, drawing charts is messy when working directly with the canvas. Because of that, sharing the data handler between charts is ideal, but sharing any functionality between canvas handlers turns the long term prospects of this project into a chart engine.
 
 **This should not become a chart engine**
-
-<br />
 
 One package per chart and being inefficient by lifting and shifting some common code snippets is not best practice and a bit annoying.
 
