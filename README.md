@@ -66,7 +66,10 @@ sankeyChart.drawChart();
     "nodeGap": {as a percentage of canvas height},
     "nodeWidth": {as a percentage of canvas width},
     "showLabels": {boolean},
-    "chartPadding": {number in pixels}
+    "chartPadding": {number in pixels},
+    "key": {
+      "keyHeight": {number in pixels}
+    }
 }
 ```
 

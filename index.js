@@ -6,14 +6,13 @@ class CanvasHandler {
     this.config = {};
 
     if (canvas.getContext) {
+      this.canvas = canvas;
       console.log("Canvas found.");
 
       // DEFAULT CUSTOMISATIONS TO THE CHART
       this.setConfig({});
 
       //////////////////////////////
-
-      this.canvas = canvas;
       this.canvas.style.border = 'solid 2px black';
       this.context = canvas.getContext("2d");
       this.dpi = window.devicePixelRatio || 1;
@@ -34,17 +33,25 @@ class CanvasHandler {
     this.nodeWidth = config.nodeWidth ?? 2;
     this.showLabels = config.showLabels ?? false;
     this.chartPadding = config.chartPadding ?? 10;
-    }
+    this.canvas.style.background = config.background ?? '#777777';
+    this.key = config.key ?? false;
+  }
 
   drawChart() {
     this.initialiseMaps();
     this.drawNodes();
     this.drawFlows();
+    this.drawKey();
   }
 
   initialiseMaps() {
+    let keyCompensation = 0;
+    if (this.key) {
+      keyCompensation = this.key.height ?? 150;
+    }
+
     let layers = this.jsonData.nodeLayers
-    this.dataTocanvasHeightPercentage = this.canvas.height / this.jsonData.scale;
+    this.dataToCanvasHeightPercentage = (this.canvas.height - keyCompensation) / this.jsonData.scale;
     for (let layerIndex = 0; layerIndex < layers.length; layerIndex++) {
       let layer = layers[layerIndex];
 
@@ -68,7 +75,7 @@ class CanvasHandler {
         let startX = layerX - (((this.nodeWidth) * canvasWidthPercentage) / 2) - xCompensation - paddingCompensation;
         let startY = previousEndY + ((this.nodeGap / 2) * canvasHeightPercentage);
         let endX = startX + this.nodeWidth * canvasWidthPercentage;
-        let endY = startY + (node.size * this.dataTocanvasHeightPercentage) - (this.nodeGap * canvasHeightPercentage);
+        let endY = startY + (node.size * this.dataToCanvasHeightPercentage) - (this.nodeGap * canvasHeightPercentage);
         
         this.nodeMap[layerIndex][node.index] = {
           "position": [[startX, startY],[endX, endY]], 
@@ -86,7 +93,7 @@ class CanvasHandler {
           "colours": {}
         }
 
-        previousEndY += (node.size * this.dataTocanvasHeightPercentage);
+        previousEndY += (node.size * this.dataToCanvasHeightPercentage);
       }
     }
   }
@@ -218,6 +225,12 @@ class CanvasHandler {
 
     this.context.closePath();
     this.context.fill();
+  }
+
+  drawKey() {
+    if (this.key) {
+      // Draw key
+    }
   }
 
   randomColour() {
