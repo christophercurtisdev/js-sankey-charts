@@ -31,7 +31,8 @@ class CanvasHandler {
   setConfig(config) {
     this.nodeGap = config.nodeGap ?? 1;
     this.nodeWidth = config.nodeWidth ?? 2;
-    this.showLabels = config.showLabels ?? false;
+    this.nodeLabels = config.nodeLabels ?? false;
+    this.nodePercentages = config.nodePercentages ?? false;
     this.chartPadding = config.chartPadding ?? 10;
     this.canvas.style.background = config.background ?? '#777777';
     this.key = config.key ?? false;
@@ -41,6 +42,7 @@ class CanvasHandler {
     this.initialiseMaps();
     this.drawNodes();
     this.drawFlows();
+    this.drawNodeLabels();
     this.drawKey();
   }
 
@@ -85,7 +87,7 @@ class CanvasHandler {
           "colour": node.colour ?? this.randomColour(),
           "type": node.type ?? "spacer",
           "spacerFlowCounter": 0,
-          "showLabel": node.label && this.showLabels
+          "showLabel": node.label && this.nodeLabels
         };
         
         this.flowMap[layerIndex][node.index] = {
@@ -116,7 +118,6 @@ class CanvasHandler {
   }
 
   drawNode(node) {
-    // Abstracted to method for easier node customisation later
     this.context.fillStyle = node.colour;
 
     let startX, startY, endX, endY;
@@ -135,12 +136,49 @@ class CanvasHandler {
       this.context.closePath();
       this.context.fill();
     }
+  }
+
+  drawNodeLabels() {
+    // Customisations
+    this.context.fillStyle = this.colour;
+
+    // Nested loop Variables
+    let layer, node;
+
+    for (let layerIndex = 0; layerIndex < this.nodeMap.length; layerIndex++) {
+      layer = this.nodeMap[layerIndex];
+      // Draw node layers
+      for(let nodeIndex = 0; nodeIndex < layer.length; nodeIndex++) {
+        node = layer[nodeIndex];
+        this.drawNodeLabel(node);
+      }
+    }
+  }
+
+  drawNodeLabel(node) {
+    let startX, startY, endX, endY;
+    [[startX, startY],[endX, endY]] = node.position;
 
     if (node.showLabel) {
+      let labelTextHeight = 15;
       this.context.textBaseline = "middle";
       this.context.fillStyle = "black";
       this.context.textAlign = "center";
-      this.context.fillText(node.label, ((endX - startX) / 2) + startX, ((endY - startY) / 2) + startY);
+      this.context.font = `bold ${labelTextHeight}px sans-serif`;
+      
+      let labelLines = {};
+      labelLines.label = { "position": ((endY - startY) / 2) + startY + ((labelTextHeight * - 1)), "text": node.label };
+      let percentage = (node.size / this.jsonData.scale) * 100;
+      labelLines.percentage = { "position": ((endY - startY) / 2) + startY, "text": `${percentage}%` };
+      labelLines.value = { "position": ((endY - startY) / 2) + startY + ((labelTextHeight * + 1)), "text": node.size }
+
+      for (let labelLine in labelLines) {
+        this.context.fillStyle = 'white';
+        this.context.fillText(labelLines[labelLine].text, ((endX - startX) / 2) + startX, labelLines[labelLine].position);
+        this.context.strokeStyle = 'black';
+        this.context.lineWidth = 0.5 / this.dpi;
+        this.context.strokeText(labelLines[labelLine].text, ((endX - startX) / 2) + startX, labelLines[labelLine].position);
+      }
     }
   }
 

@@ -68,7 +68,7 @@ sankeyChart.drawChart();
     "showLabels": {boolean},
     "chartPadding": {number in pixels},
     "key": {
-      "keyHeight": {number in pixels}
+      "height": {number in pixels}
     }
 }
 ```
