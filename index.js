@@ -33,6 +33,7 @@ class CanvasHandler {
     this.nodeWidth = config.nodeWidth ?? 2;
     this.nodeLabels = config.nodeLabels ?? false;
     this.nodePercentages = config.nodePercentages ?? false;
+    this.nodeValues = config.nodeValues ?? false;
     this.chartPadding = config.chartPadding ?? 10;
     this.canvas.style.background = config.background ?? '#777777';
     this.key = config.key ?? false;
@@ -87,7 +88,9 @@ class CanvasHandler {
           "colour": node.colour ?? this.randomColour(),
           "type": node.type ?? "spacer",
           "spacerFlowCounter": 0,
-          "showLabel": node.label && this.nodeLabels
+          "showLabel": node.label && this.nodeLabels,
+          "showPercentage": this.nodePercentages,
+          "showValue": this.nodeValues
         };
         
         this.flowMap[layerIndex][node.index] = {
@@ -109,7 +112,7 @@ class CanvasHandler {
 
     for (let layerIndex = 0; layerIndex < this.nodeMap.length; layerIndex++) {
       layer = this.nodeMap[layerIndex];
-      // Draw node layers
+      // Draw nodes
       for(let nodeIndex = 0; nodeIndex < layer.length; nodeIndex++) {
         node = layer[nodeIndex];
         this.drawNode(node);
@@ -147,7 +150,7 @@ class CanvasHandler {
 
     for (let layerIndex = 0; layerIndex < this.nodeMap.length; layerIndex++) {
       layer = this.nodeMap[layerIndex];
-      // Draw node layers
+      // Draw node labels
       for(let nodeIndex = 0; nodeIndex < layer.length; nodeIndex++) {
         node = layer[nodeIndex];
         this.drawNodeLabel(node);
@@ -159,26 +162,37 @@ class CanvasHandler {
     let startX, startY, endX, endY;
     [[startX, startY],[endX, endY]] = node.position;
 
-    if (node.showLabel) {
-      let labelTextHeight = 15;
-      this.context.textBaseline = "middle";
-      this.context.fillStyle = "black";
-      this.context.textAlign = "center";
-      this.context.font = `bold ${labelTextHeight}px sans-serif`;
-      
-      let labelLines = {};
-      labelLines.label = { "position": ((endY - startY) / 2) + startY + ((labelTextHeight * - 1)), "text": node.label };
-      let percentage = (node.size / this.jsonData.scale) * 100;
-      labelLines.percentage = { "position": ((endY - startY) / 2) + startY, "text": `${percentage}%` };
-      labelLines.value = { "position": ((endY - startY) / 2) + startY + ((labelTextHeight * + 1)), "text": node.size }
+    let labelLines = {};
+    let labelTextHeight = 15;
+    let lineCount = 0;
 
-      for (let labelLine in labelLines) {
-        this.context.fillStyle = 'white';
-        this.context.fillText(labelLines[labelLine].text, ((endX - startX) / 2) + startX, labelLines[labelLine].position);
-        this.context.strokeStyle = 'black';
-        this.context.lineWidth = 0.5 / this.dpi;
-        this.context.strokeText(labelLines[labelLine].text, ((endX - startX) / 2) + startX, labelLines[labelLine].position);
-      }
+    this.context.textBaseline = "middle";
+    this.context.fillStyle = "black";
+    this.context.textAlign = "center";
+    this.context.font = `bold ${labelTextHeight}px sans-serif`;
+
+    if (node.showLabel) {
+      labelLines.label = { "position": ((endY - startY) / 2) + startY + ((labelTextHeight * (lineCount - 1))), "text": node.label };
+      lineCount++;
+    }
+
+    if (node.showPercentage) {
+      let percentage = (node.size / this.jsonData.scale) * 100;
+      labelLines.percentage = { "position": ((endY - startY) / 2) + startY + ((labelTextHeight * (lineCount - 1))), "text": `${percentage}%` };
+      lineCount++;
+    }
+
+    if (node.showValue) {
+      labelLines.value = { "position": ((endY - startY) / 2) + startY + ((labelTextHeight * (lineCount - 1))), "text": node.size }
+      lineCount++;
+    }
+
+    for (let labelLine in labelLines) {
+      this.context.fillStyle = 'white';
+      this.context.fillText(labelLines[labelLine].text, ((endX - startX) / 2) + startX, labelLines[labelLine].position);
+      this.context.strokeStyle = 'black';
+      this.context.lineWidth = 0.5 / this.dpi;
+      this.context.strokeText(labelLines[labelLine].text, ((endX - startX) / 2) + startX, labelLines[labelLine].position);
     }
   }
 
